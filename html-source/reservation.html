@@ -117,7 +117,8 @@
 <script src="https://unpkg.com/notie"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    console.log("I am printing from javascript");
+
+    let attention = Prompt();
 
     (() => {
       'use strict'
@@ -139,8 +140,7 @@
     })();
 
     document.getElementById("colorButton").addEventListener("click", function() {
-        // notify("This is my message", "warning");
-        notifyModal("title", "<em>hello, world</em>", "success", "My text for the button")
+        attention.toast({msg: "Oops"});
     });
 
     const elem = document.getElementById('reservation-dates');
@@ -164,7 +164,69 @@
         })
     };
 
-</script>
+    function Prompt() {
+        let toast = function(c)
+        {
+            const {
+                msg = "",
+                icon = "success",
+                position = "top-end",
+            } = c;
 
+            const Toast = Swal.mixin({
+                toast: true,
+                title: msg,
+                position: position,
+                icon: icon,
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                  toast.onmouseenter = Swal.stopTimer;
+                  toast.onmouseleave = Swal.resumeTimer;
+                }
+            });
+
+            Toast.fire({});
+        }
+
+        let success = function(c) {
+            const {
+                msg = "",
+                title = "",
+                footer = ""
+            } = c;
+
+            Swal.fire({
+                icon: "success",
+                title: title,
+                text: msg,
+                footer: footer,
+            });
+        }
+
+        let error = function(c) {
+            const {
+                msg = "",
+                title = "",
+                footer = ""
+            } = c;
+
+            Swal.fire({
+                icon: "error",
+                title: title,
+                text: msg,
+                footer: footer,
+            });
+        }
+
+        return {
+            toast: toast,
+            success: success,
+            error: error
+        }
+    }
+
+</script>
 </body>
 </html>
