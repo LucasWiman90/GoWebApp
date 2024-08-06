@@ -1,13 +1,64 @@
 {{template "base" .}}
 
 {{define "content"}}
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <h1>This is the home page</h1>
-                <p>This is some text</p>
+<div id="main-carousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+    <div class="carousel-indicators">
+        <button type="button" data-bs-target="#main-carousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+        <button type="button" data-bs-target="#main-carousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+        <button type="button" data-bs-target="#main-carousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+    </div>
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <img src="/static/images/toteninsel.jpg" class="d-block w-100" alt="The Isle of the Dead">
+            <div class="carousel-caption d-none d-md-block">
+                <h5>Discover</h5>
+                <p>An island full of mysteries</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="/static/images/shark.jpg" class="d-block w-100" alt="Shark">
+            <div class="carousel-caption d-none d-md-block">
+                <h5>Creatures</h5>
+                <p>See the Eldritch Megalodon</p>
+            </div>
+        </div>
+        <div class="carousel-item">
+            <img src="/static/images/coffee.jpg" class="d-block w-100" alt="Coffee">
+            <div class="carousel-caption d-none d-md-block">
+                <h5>Coffee</h5>
+                <p>Try out a new kind of coffee</p>
             </div>
         </div>
     </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#main-carousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#main-carousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h1 class="text-center mt-4">Welcome to Eldritch Island Inn</h1>
+            <p>Slumber Amidst the Eldritch Whispers, Awaken to Enigmatic Elegance</p>
+            <p>Welcome to the Eldritch Isle Inn, where timeless charm meets the mysterious allure of the unknown.
+                Nestled on a secluded island, our bed & breakfast offers a unique retreat infused with Lovecraftian ambiance. 
+                Each room is meticulously adorned with antique furnishings and curious relics, providing a cozy yet enigmatic atmosphere for our guests.
+                Savor gourmet breakfasts crafted from local ingredients, served in a dining room that whispers of ancient tales.
+                As night falls, wander along the island's moonlit shores or relax by the roaring fireplace with a tome from our extensive occult library. 
+                At the Eldritch Isle Inn, every stay is an adventure into the arcane, where the ordinary and the extraordinary converge.
+                Embrace the mystery. Indulge in the comfort. Experience the unknown.
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <a href="/search-availability" class="btn btn-dark">Make Reservation Now</a>
+        </div>
+    </div>
+</div>
 {{end}}
 

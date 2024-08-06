@@ -50,3 +50,28 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 		StringMap: stringMap,
 	})
 }
+
+// Reservation renders the make reservation page and displays form
+func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
+	render.RenderTemplate(w, "make-reservation.page.tmpl", &models.TemplateData{})
+}
+
+// Nebula renders the Nebula room page
+func (m *Repository) Nebula(w http.ResponseWriter, r *http.Request) {
+	render.RenderTemplate(w, "nebula.page.tmpl", &models.TemplateData{})
+}
+
+// Darkfathom renders the Darkfathom room page
+func (m *Repository) Darkfathom(w http.ResponseWriter, r *http.Request) {
+	render.RenderTemplate(w, "darkfathom.page.tmpl", &models.TemplateData{})
+}
+
+// Availability renders the search availability room page
+func (m *Repository) Availability(w http.ResponseWriter, r *http.Request) {
+	render.RenderTemplate(w, "search-availability.page.tmpl", &models.TemplateData{})
+}
+
+// Contact renders the search availability room page
+func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
+	render.RenderTemplate(w, "contact.page.tmpl", &models.TemplateData{})
+}

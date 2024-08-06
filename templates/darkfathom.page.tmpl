@@ -1,0 +1,54 @@
+{{template "base" .}}
+
+{{define "content"}}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <img src="/static/images/darkdeep.jpg" class="img-fluid img-thumbnail mx-auto d-block room-image" alt="room image">
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <h1 class="text-center mt-4">Darkfathom Suite</h1>
+            <p>Slumber Amidst the Eldritch Whispers, Awaken to Enigmatic Elegance</p>
+            <p>Welcome to the Eldritch Isle Inn, where timeless charm meets the mysterious allure of the unknown.
+                Nestled on a secluded island, our bed & breakfast offers a unique retreat infused with Lovecraftian ambiance. 
+                Each room is meticulously adorned with antique furnishings and curious relics, providing a cozy yet enigmatic atmosphere for our guests.
+                Savor gourmet breakfasts crafted from local ingredients, served in a dining room that whispers of ancient tales.
+                As night falls, wander along the island's moonlit shores or relax by the roaring fireplace with a tome from our extensive occult library. 
+                At the Eldritch Isle Inn, every stay is an adventure into the arcane, where the ordinary and the extraordinary converge.
+                Embrace the mystery. Indulge in the comfort. Experience the unknown.
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col text-center">
+            <a id="check-availability-button" href="#!" class="btn btn-dark">Check Availability</a>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "js"}}
+    <script>
+        document.getElementById("check-availability-button").addEventListener("click", function() {
+            let html = `
+            <form id="check-availability-form" action="" method="post" novalidate class="needs-validation">
+                <div class="row g-3">
+                    <div class="col">
+                        <div class="row g-3" id="reservation-dates-modal">
+                            <div class="col">
+                                <input disabled required class="form-control" type="text" name="start" id="start" placeholder="Arrival">
+                            </div>
+                            <div class="col">
+                                <input disabled required class="form-control" type="text" name="end" id="end" placeholder="Departure">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            `
+            attention.custom({msg: html, title: "Choose your dates"});
+        });
+    </script>
+{{end}}
