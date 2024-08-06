@@ -71,7 +71,7 @@ func (m *Repository) Availability(w http.ResponseWriter, r *http.Request) {
 	render.RenderTemplate(w, "search-availability.page.tmpl", &models.TemplateData{})
 }
 
-// Contact renders the search availability room page
+// Contact renders the contact room page
 func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
 	render.RenderTemplate(w, "contact.page.tmpl", &models.TemplateData{})
 }
