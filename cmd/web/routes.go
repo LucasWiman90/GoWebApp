@@ -3,8 +3,8 @@ package main
 import (
 	"net/http"
 
-	"github.com/LucasWiman90/GoWebApp/pkg/config"
-	"github.com/LucasWiman90/GoWebApp/pkg/handlers"
+	"github.com/LucasWiman90/GoWebApp/internal/config"
+	"github.com/LucasWiman90/GoWebApp/internal/handlers"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )

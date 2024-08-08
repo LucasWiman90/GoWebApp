@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/LucasWiman90/GoWebApp/pkg/config"
-	"github.com/LucasWiman90/GoWebApp/pkg/handlers"
-	"github.com/LucasWiman90/GoWebApp/pkg/render"
+	"github.com/LucasWiman90/GoWebApp/internal/config"
+	"github.com/LucasWiman90/GoWebApp/internal/handlers"
+	"github.com/LucasWiman90/GoWebApp/internal/render"
 	"github.com/alexedwards/scs/v2"
 )
 
