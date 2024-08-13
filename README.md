@@ -8,5 +8,4 @@ This is the repository for my web Application project.
 
 
 # How to run the application
-The main file to run is located in cmd/web.
-As such, compile and run with "go run ./cmd/web"
+Compile and run the application using the ./run.sh script
