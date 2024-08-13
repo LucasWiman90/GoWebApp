@@ -5,10 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/LucasWiman90/GoWebApp/internal/config"
 	"github.com/LucasWiman90/GoWebApp/internal/handlers"
+	"github.com/LucasWiman90/GoWebApp/internal/helpers"
 	"github.com/LucasWiman90/GoWebApp/internal/models"
 	"github.com/LucasWiman90/GoWebApp/internal/render"
 	"github.com/alexedwards/scs/v2"
@@ -18,6 +20,7 @@ const portNumber = ":8080"
 
 var app config.AppConfig
 var session *scs.SessionManager
+var infoLog, errorLog *log.Logger
 
 // main is the main application function
 func main() {
@@ -43,6 +46,12 @@ func run() error {
 	gob.Register(models.Reservation{})
 	//Change this to true when in production
 	app.InProduction = false
+
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.InfoLog = infoLog
+
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
 
 	//Setup sessions
 	session = scs.New()
@@ -70,6 +79,9 @@ func run() error {
 
 	//Sets the config for the rendering of templates
 	render.NewTemplates(&app)
+
+	//Sets the config for the usage of helpers
+	helpers.NewHelpers(&app)
 
 	return nil
 }
