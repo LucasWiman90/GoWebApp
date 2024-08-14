@@ -1,0 +1,19 @@
+development:
+  dialect: postgres
+  database: postgres
+  user: 
+  password:
+  host: 172.25.32.1
+  pool: 5
+
+test:
+  url: {{envOr "TEST_DATABASE_URL" "postgres://postgres:postgres@172.25.32.1:5432/myapp_test"}}
+
+production:
+  url: {{envOr "DATABASE_URL" "postgres://postgres:postgres@172.25.32.1:5432/myapp_production"}}
+
+#Note to self
+#This IP is the actual windows host IP that we are using to connect from WSL2
+#To make this possible we had to A) Add a firewall rule B) Make sure that postgresql.conf listens to *
+#C) Configure pg_hba.conf to allow connections from the WSL2 IP range and then restart postgres server.
+#D) Update bashrc with a small script of convenience for connection
