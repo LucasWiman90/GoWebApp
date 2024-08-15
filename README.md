@@ -11,3 +11,12 @@ This is the repository for my web Application project.
 
 # How to run the application
 Compile and run the application using the ./run.sh script
+
+# Soda
+This command creates a new up/down migration with the name you specified
+
+soda generate fizz <migration_name>
+
+This command below takes all migrations upwards
+
+soda migrate
