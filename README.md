@@ -20,3 +20,10 @@ soda generate fizz <migration_name>
 This command below takes all migrations upwards
 
 soda migrate
+
+This command below migrates one step downwards (not all at once)
+
+soda migrate down
+
+Note: We are also missing a foreign key from room_strictions table:
+reservation_id -> to reservations table id
