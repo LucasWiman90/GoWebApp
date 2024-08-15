@@ -25,5 +25,15 @@ This command below migrates one step downwards (not all at once)
 
 soda migrate down
 
-Note: We are also missing a foreign key from room_strictions table:
-reservation_id -> to reservations table id
+This command below resets the database to a clean slate with all migrations in place
+Note: Make sure no other connections exist for the database.
+
+soda reset
+
+# PostgreSQL
+Note to self: Never use the default postgres database for applications.
+Create one specifically for your application, like here below "bookings"
+
+psql -h winhost -p 5432 -U postgres -d bookings
+
+DROP DATABASE bookings
