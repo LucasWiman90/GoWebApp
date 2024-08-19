@@ -26,7 +26,7 @@ This command below migrates one step downwards (not all at once)
 soda migrate down
 
 This command below resets the database to a clean slate with all migrations in place
-Note: Make sure no other connections exist for the database.
+Note: Make sure no other connections exist for the database. So exit Dbeaver beforehand etc.
 
 soda reset
 
