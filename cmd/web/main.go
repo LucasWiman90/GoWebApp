@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/LucasWiman90/GoWebApp/internal/config"
+	"github.com/LucasWiman90/GoWebApp/internal/driver"
 	"github.com/LucasWiman90/GoWebApp/internal/handlers"
 	"github.com/LucasWiman90/GoWebApp/internal/helpers"
 	"github.com/LucasWiman90/GoWebApp/internal/models"
@@ -24,11 +25,12 @@ var infoLog, errorLog *log.Logger
 
 // main is the main application function
 func main() {
-	err := run()
+	db, err := run()
 
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer db.SQL.Close()
 
 	fmt.Printf("Starting application on port %s\n", portNumber)
 
@@ -42,7 +44,7 @@ func main() {
 	log.Fatal(err)
 }
 
-func run() error {
+func run() (*driver.DB, error) {
 	gob.Register(models.Reservation{})
 	//Change this to true when in production
 	app.InProduction = false
@@ -62,11 +64,19 @@ func run() error {
 
 	app.Session = session
 
+	//Connect to database
+	log.Println("Connecting to database...")
+	db, err := driver.ConnectSQL("host=172.25.32.1 port=5432 dbname=bookings user=postgres password=1Wasabi2")
+	if err != nil {
+		log.Fatal("Cannot connect to database! Shutting down...")
+	}
+	log.Println("Connected to database!")
+
 	//Create template cache
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal("cannot create template cache")
-		return err
+		return nil, err
 	}
 
 	//Set the template cache as part of app config
@@ -74,7 +84,7 @@ func run() error {
 	app.UseCache = false
 
 	//Create a repo for the appconfig and hand it back to the handlers
-	repo := handlers.NewRepo(&app)
+	repo := handlers.NewRepo(&app, db)
 	handlers.NewHandlers(repo)
 
 	//Sets the config for the rendering of templates
@@ -83,5 +93,5 @@ func run() error {
 	//Sets the config for the usage of helpers
 	helpers.NewHelpers(&app)
 
-	return nil
+	return db, nil
 }
