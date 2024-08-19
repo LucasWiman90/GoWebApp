@@ -46,6 +46,9 @@ func main() {
 
 func run() (*driver.DB, error) {
 	gob.Register(models.Reservation{})
+	gob.Register(models.User{})
+	gob.Register(models.Room{})
+	gob.Register(models.Reservation{})
 	//Change this to true when in production
 	app.InProduction = false
 
@@ -88,7 +91,7 @@ func run() (*driver.DB, error) {
 	handlers.NewHandlers(repo)
 
 	//Sets the config for the rendering of templates
-	render.NewTemplates(&app)
+	render.NewRenderer(&app)
 
 	//Sets the config for the usage of helpers
 	helpers.NewHelpers(&app)
