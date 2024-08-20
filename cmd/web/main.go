@@ -67,9 +67,15 @@ func run() (*driver.DB, error) {
 
 	app.Session = session
 
+	var password string
+	fmt.Print("Enter password: ")
+	fmt.Scanln(&password)
+
+	connStr := fmt.Sprintf("host=172.25.32.1 port=5432 dbname=bookings user=postgres password=%s", password)
+
 	//Connect to database
 	log.Println("Connecting to database...")
-	db, err := driver.ConnectSQL("host=172.25.32.1 port=5432 dbname=bookings user=postgres password=1Wasabi2")
+	db, err := driver.ConnectSQL(connStr)
 	if err != nil {
 		log.Fatal("Cannot connect to database! Shutting down...")
 	}
