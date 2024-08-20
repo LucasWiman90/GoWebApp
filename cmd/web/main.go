@@ -68,7 +68,7 @@ func run() (*driver.DB, error) {
 	app.Session = session
 
 	var password string
-	fmt.Print("Enter password: ")
+	fmt.Print("Enter password for PostgresSQL DB: ")
 	fmt.Scanln(&password)
 
 	connStr := fmt.Sprintf("host=172.25.32.1 port=5432 dbname=bookings user=postgres password=%s", password)
