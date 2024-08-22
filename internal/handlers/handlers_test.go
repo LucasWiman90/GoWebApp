@@ -5,7 +5,10 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/LucasWiman90/GoWebApp/internal/models"
 )
@@ -89,10 +92,9 @@ func TestRepository_Reservation(t *testing.T) {
 	req, _ = http.NewRequest("GET", "/make-reservation", nil)
 	ctx = getCtx(req)
 	req = req.WithContext(ctx)
-
 	rr = httptest.NewRecorder()
-	handler.ServeHTTP(rr, req)
 
+	handler.ServeHTTP(rr, req)
 	if rr.Code != http.StatusTemporaryRedirect {
 		t.Errorf("Reservation handler returned wrong response code: god %d, wanted %d", rr.Code, http.StatusOK)
 	}
@@ -102,14 +104,53 @@ func TestRepository_Reservation(t *testing.T) {
 	ctx = getCtx(req)
 	req = req.WithContext(ctx)
 	rr = httptest.NewRecorder()
-
 	reservation.RoomID = 100
 	session.Put(ctx, "reservation", reservation)
 
 	handler.ServeHTTP(rr, req)
-
 	if rr.Code != http.StatusTemporaryRedirect {
 		t.Errorf("Reservation handler returned wrong response code: god %d, wanted %d", rr.Code, http.StatusOK)
+	}
+}
+
+func TestRepositry_PostReservation(t *testing.T) {
+
+	//Create a reservation
+	layout := "2006-01-02"
+	sd, _ := time.Parse(layout, "2024-01-02")
+	ed, _ := time.Parse(layout, "2024-01-03")
+	reservation := models.Reservation{
+		RoomID:    1,
+		StartDate: sd,
+		EndDate:   ed,
+		Room: models.Room{
+			ID:       1,
+			RoomName: "Nebula Quarters",
+		},
+	}
+
+	postedData := url.Values{}
+	postedData.Add("first_name", "Harold")
+	postedData.Add("last_name", "Jones")
+	postedData.Add("email", "harold.jones@gmail.com")
+	postedData.Add("phone", "9718594945")
+	postedData.Add("room_id", "1")
+
+	req, _ := http.NewRequest("POST", "/make-reservation", strings.NewReader(postedData.Encode()))
+	ctx := getCtx(req)
+	req = req.WithContext(ctx)
+
+	session.Put(ctx, "reservation", reservation)
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr := httptest.NewRecorder()
+
+	handler := http.HandlerFunc(Repo.PostReservation)
+
+	handler.ServeHTTP(rr, req)
+	if rr.Code != http.StatusSeeOther {
+		t.Errorf("PostReservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusSeeOther)
 	}
 }
 
