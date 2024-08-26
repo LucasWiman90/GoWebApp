@@ -100,13 +100,13 @@ func TestRepository_Reservation(t *testing.T) {
 	}
 }
 
-func TestRepositry_PostReservation(t *testing.T) {
-
-	//Create a reservation
+func TestRepository_PostReservation(t *testing.T) {
 	layout := "2006-01-02"
 	sd, _ := time.Parse(layout, "2024-01-02")
 	ed, _ := time.Parse(layout, "2024-01-03")
-	reservation := models.Reservation{
+
+	// Base reservation used across test cases
+	baseReservation := models.Reservation{
 		RoomID:    1,
 		StartDate: sd,
 		EndDate:   ed,
@@ -116,133 +116,86 @@ func TestRepositry_PostReservation(t *testing.T) {
 		},
 	}
 
-	postedData := url.Values{}
-	postedData.Add("first_name", "Harold")
-	postedData.Add("last_name", "Jones")
-	postedData.Add("email", "harold.jones@gmail.com")
-	postedData.Add("phone", "9718594945")
-	postedData.Add("room_id", "1")
-
-	req, _ := http.NewRequest("POST", "/make-reservation", strings.NewReader(postedData.Encode()))
-	ctx := getCtx(req)
-	req = req.WithContext(ctx)
-
-	session.Put(ctx, "reservation", reservation)
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	rr := httptest.NewRecorder()
-
-	handler := http.HandlerFunc(Repo.PostReservation)
-
-	handler.ServeHTTP(rr, req)
-	if rr.Code != http.StatusSeeOther {
-		t.Errorf("PostReservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusSeeOther)
+	// Define a slice of test cases
+	tests := []struct {
+		name           string
+		reservation    models.Reservation
+		reqBody        url.Values
+		isNilBody      bool
+		expectedStatus int
+		setupSession   bool
+	}{
+		{
+			name:           "Valid reservation",
+			reservation:    baseReservation,
+			reqBody:        url.Values{"first_name": {"Harold"}, "last_name": {"Jones"}, "email": {"harold.jones@gmail.com"}, "phone": {"9718594945"}, "room_id": {"1"}},
+			expectedStatus: http.StatusSeeOther,
+			setupSession:   true,
+		},
+		{
+			name:           "Missing form body",
+			reservation:    baseReservation,
+			isNilBody:      true,
+			expectedStatus: http.StatusTemporaryRedirect,
+			setupSession:   true,
+		},
+		{
+			name:           "Invalid form",
+			reservation:    baseReservation,
+			reqBody:        url.Values{"first_name": {"a"}, "last_name": {"l"}, "room_id": {"1"}},
+			expectedStatus: http.StatusOK,
+			setupSession:   true,
+		},
+		{
+			name:           "Session not set with reservation",
+			expectedStatus: http.StatusTemporaryRedirect,
+			setupSession:   false,
+		},
+		{
+			name:           "Unable to insert reservation",
+			reservation:    models.Reservation{RoomID: 2, StartDate: sd, EndDate: ed, Room: models.Room{ID: 2, RoomName: "Galaxy Suite"}},
+			reqBody:        url.Values{"first_name": {"Douglas"}, "last_name": {"Adams"}, "email": {"hitchiker@gmail.com"}, "phone": {"234626456"}, "room_id": {"1"}},
+			expectedStatus: http.StatusTemporaryRedirect,
+			setupSession:   true,
+		},
+		{
+			name:           "Unable to insert room restrictions",
+			reservation:    models.Reservation{RoomID: 1000, StartDate: sd, EndDate: ed, Room: models.Room{ID: 1000, RoomName: "Unknown Room"}},
+			reqBody:        url.Values{"first_name": {"John"}, "last_name": {"Scatman"}, "email": {"john.scatman@gmail.com"}, "phone": {"432452"}, "room_id": {"1"}},
+			expectedStatus: http.StatusTemporaryRedirect,
+			setupSession:   true,
+		},
 	}
 
-	//Test for missing form body
-	req, _ = http.NewRequest("POST", "/make-reservation", nil)
-	ctx = getCtx(req)
-	req = req.WithContext(ctx)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var req *http.Request
+			if tt.isNilBody {
+				req, _ = http.NewRequest("POST", "/make-reservation", nil)
+			} else {
+				req, _ = http.NewRequest("POST", "/make-reservation", strings.NewReader(tt.reqBody.Encode()))
+			}
 
-	session.Put(ctx, "reservation", reservation)
+			// Set up context and session if needed
+			ctx := getCtx(req)
+			req = req.WithContext(ctx)
 
-	rr = httptest.NewRecorder()
+			if tt.setupSession {
+				session.Put(ctx, "reservation", tt.reservation)
+			}
 
-	handler = http.HandlerFunc(Repo.PostReservation)
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
-	handler.ServeHTTP(rr, req)
-	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("PostReservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusTemporaryRedirect)
+			rr := httptest.NewRecorder()
+			handler := http.HandlerFunc(Repo.PostReservation)
+
+			handler.ServeHTTP(rr, req)
+
+			if rr.Code != tt.expectedStatus {
+				t.Errorf("%s handler returned wrong response code: got %d, wanted %d", tt.name, rr.Code, tt.expectedStatus)
+			}
+		})
 	}
-
-	//Test form is invalid
-	postedData = url.Values{}
-	postedData.Add("first_name", "a")
-	postedData.Add("last_name", "l")
-	postedData.Add("room_id", "1")
-
-	req, _ = http.NewRequest("POST", "/make-reservation", strings.NewReader(postedData.Encode()))
-	ctx = getCtx(req)
-	req = req.WithContext(ctx)
-
-	session.Put(ctx, "reservation", reservation)
-
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	rr = httptest.NewRecorder()
-
-	handler = http.HandlerFunc(Repo.PostReservation)
-
-	handler.ServeHTTP(rr, req)
-	if rr.Code != http.StatusOK {
-		t.Errorf("PostReservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusOK)
-	}
-
-	// Test when session is not set with reservation
-	req, _ = http.NewRequest("POST", "/make-reservation", nil)
-	ctx = getCtx(req)
-	req = req.WithContext(ctx)
-
-	rr = httptest.NewRecorder()
-
-	handler = http.HandlerFunc(Repo.PostReservation)
-
-	handler.ServeHTTP(rr, req)
-	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("PostReservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusTemporaryRedirect)
-	}
-
-	// Test when unable to insert reservation
-	postedData = url.Values{}
-	postedData.Add("first_name", "Douglas")
-	postedData.Add("last_name", "Adams")
-	postedData.Add("email", "hitchiker@gmail.com")
-	postedData.Add("phone", "234626456")
-	postedData.Add("room_id", "1")
-
-	req, _ = http.NewRequest("POST", "/make-reservation", strings.NewReader(postedData.Encode()))
-	ctx = getCtx(req)
-	req = req.WithContext(ctx)
-
-	reservation.RoomID = 2
-	session.Put(ctx, "reservation", reservation)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	rr = httptest.NewRecorder()
-
-	handler = http.HandlerFunc(Repo.PostReservation)
-
-	handler.ServeHTTP(rr, req)
-	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("PostReservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusTemporaryRedirect)
-	}
-
-	// Test when unable to insert room restrictions
-	postedData = url.Values{}
-	postedData.Add("first_name", "John")
-	postedData.Add("last_name", "Scatman")
-	postedData.Add("email", "john.scatman@gmail.com")
-	postedData.Add("phone", "432452")
-	postedData.Add("room_id", "1")
-
-	req, _ = http.NewRequest("POST", "/make-reservation", strings.NewReader(postedData.Encode()))
-	ctx = getCtx(req)
-	req = req.WithContext(ctx)
-
-	reservation.RoomID = 1000
-	session.Put(ctx, "reservation", reservation)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-
-	rr = httptest.NewRecorder()
-
-	handler = http.HandlerFunc(Repo.PostReservation)
-
-	handler.ServeHTTP(rr, req)
-	if rr.Code != http.StatusTemporaryRedirect {
-		t.Errorf("PostReservation handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusTemporaryRedirect)
-	}
-
 }
 
 func TestRepositry_ReservationSummary(t *testing.T) {
