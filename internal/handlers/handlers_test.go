@@ -2,6 +2,8 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -400,6 +402,119 @@ func TestRepositry_BookRoom(t *testing.T) {
 	if rr.Code != http.StatusTemporaryRedirect {
 		t.Errorf("BookRoom handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusTemporaryRedirect)
 	}
+}
+
+func TestRepository_AvailabilityJSON(t *testing.T) {
+	reqBody := "start=2050-01-02"
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "end=2050-01-03")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
+
+	// create our request
+	req, _ := http.NewRequest("POST", "/search-availability-json", strings.NewReader(reqBody))
+	ctx := getCtx(req)
+	req = req.WithContext(ctx)
+
+	// set the request header
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	// create our response recorder
+	rr := httptest.NewRecorder()
+
+	// make our handler a http.HandlerFunc
+	handler := http.HandlerFunc(Repo.AvailabilityJSON)
+
+	// make the request to our handler
+	handler.ServeHTTP(rr, req)
+
+	// since we have no rooms available, we expect to get status http.StatusSeeOther
+	// this time we want to parse JSON and get the expected response
+	var j jsonResponse
+	err := json.Unmarshal([]byte(rr.Body.Bytes()), &j)
+	if err != nil {
+		t.Error("failed to parse json!")
+	}
+
+	// since we specified a start date > 2049-12-31, we expect no availability
+	if j.OK {
+		t.Error("Got availability when none was expected in AvailabilityJSON")
+	}
+
+	// Case 2 Parsing failure - No Request Body
+	req, _ = http.NewRequest("POST", "/search-availability-json", nil)
+	ctx = getCtx(req)
+	req = req.WithContext(ctx)
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr = httptest.NewRecorder()
+
+	handler = http.HandlerFunc(Repo.AvailabilityJSON)
+
+	handler.ServeHTTP(rr, req)
+
+	err = json.Unmarshal([]byte(rr.Body.Bytes()), &j)
+
+	if err != nil {
+		t.Error("Failed to parse JSON")
+	}
+
+	if j.Message != "parse-fail:internal server error" {
+		t.Error("It should be fail and its passed")
+	}
+
+	// Case 3 Room unavailable
+	reqBody = "start=2040-01-02"
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "end=2040-01-02")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
+
+	req, _ = http.NewRequest("POST", "/search-availability-json", strings.NewReader(reqBody))
+	ctx = getCtx(req)
+	req = req.WithContext(ctx)
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr = httptest.NewRecorder()
+
+	handler = http.HandlerFunc(Repo.AvailabilityJSON)
+
+	handler.ServeHTTP(rr, req)
+
+	err = json.Unmarshal([]byte(rr.Body.Bytes()), &j)
+	if err != nil {
+		t.Error("Failed to parse JSON")
+	}
+
+	if !j.OK {
+		t.Error("There is no availablity and it should be fail and its passed")
+	}
+
+	// Cas 4 Database error
+	reqBody = "start=2060-01-01"
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "end=2060-01-02")
+	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
+
+	req, _ = http.NewRequest("POST", "/search-availability-json", strings.NewReader(reqBody))
+	ctx = getCtx(req)
+	req = req.WithContext(ctx)
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	rr = httptest.NewRecorder()
+
+	handler = http.HandlerFunc(Repo.AvailabilityJSON)
+
+	handler.ServeHTTP(rr, req)
+
+	err = json.Unmarshal([]byte(rr.Body.Bytes()), &j)
+
+	if err != nil {
+		t.Error("Failed to parse JSON")
+	}
+
+	if j.Message != "Error querying database" {
+		t.Error("Error connecting to my DB:it should be fail and its passed")
+	}
+
 }
 
 func getCtx(req *http.Request) context.Context {
