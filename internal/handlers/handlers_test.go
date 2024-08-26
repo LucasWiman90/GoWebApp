@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -32,20 +31,6 @@ var theTests = []struct {
 	{"darkfathom", "/darkfathom", "GET", http.StatusOK},
 	{"sa", "/search-availability", "GET", http.StatusOK},
 	{"contact", "/contact", "GET", http.StatusOK},
-	/* {"post-search-avail", "/search-availability", "POST", []postData{
-		{key: "start", value: "2020-01-01"},
-		{key: "end", value: "2020-01-02"},
-	}, http.StatusOK},
-	{"post-search-avail-json", "/search-availability-json", "POST", []postData{
-		{key: "start", value: "2020-01-01"},
-		{key: "end", value: "2020-01-02"},
-	}, http.StatusOK},
-	{"make-reservation-post", "/make-reservation", "POST", []postData{
-		{key: "first_name", value: "Dave"},
-		{key: "last_name", value: "Smith"},
-		{key: "email", value: "me@here.com"},
-		{key: "phone", value: "555-555-555"},
-	}, http.StatusOK}, */
 }
 
 func TestHandlers(t *testing.T) {
@@ -406,12 +391,13 @@ func TestRepositry_BookRoom(t *testing.T) {
 
 func TestRepository_AvailabilityJSON(t *testing.T) {
 	// Case 1 - Room not available
-	reqBody := "start=2050-01-02"
-	reqBody = fmt.Sprintf("%s&%s", reqBody, "end=2050-01-03")
-	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
+	postedData := url.Values{}
+	postedData.Add("start", "2050-01-02")
+	postedData.Add("end", "2050-01-03")
+	postedData.Add("room_id", "1")
 
 	// create our request
-	req, _ := http.NewRequest("POST", "/search-availability-json", strings.NewReader(reqBody))
+	req, _ := http.NewRequest("POST", "/search-availability-json", strings.NewReader(postedData.Encode()))
 	ctx := getCtx(req)
 	req = req.WithContext(ctx)
 
@@ -464,11 +450,12 @@ func TestRepository_AvailabilityJSON(t *testing.T) {
 	}
 
 	// Case 3 Room available
-	reqBody = "start=2040-01-02"
-	reqBody = fmt.Sprintf("%s&%s", reqBody, "end=2040-01-02")
-	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
+	postedData = url.Values{}
+	postedData.Add("start", "2040-01-02")
+	postedData.Add("end", "2040-01-03")
+	postedData.Add("room_id", "1")
 
-	req, _ = http.NewRequest("POST", "/search-availability-json", strings.NewReader(reqBody))
+	req, _ = http.NewRequest("POST", "/search-availability-json", strings.NewReader(postedData.Encode()))
 	ctx = getCtx(req)
 	req = req.WithContext(ctx)
 
@@ -491,11 +478,12 @@ func TestRepository_AvailabilityJSON(t *testing.T) {
 	}
 
 	// Cas 4 Database error
-	reqBody = "start=2060-01-01"
-	reqBody = fmt.Sprintf("%s&%s", reqBody, "end=2060-01-02")
-	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
+	postedData = url.Values{}
+	postedData.Add("start", "2060-01-01")
+	postedData.Add("end", "2060-01-02")
+	postedData.Add("room_id", "1")
 
-	req, _ = http.NewRequest("POST", "/search-availability-json", strings.NewReader(reqBody))
+	req, _ = http.NewRequest("POST", "/search-availability-json", strings.NewReader(postedData.Encode()))
 	ctx = getCtx(req)
 	req = req.WithContext(ctx)
 
@@ -522,7 +510,7 @@ func TestRepository_PostAvailability(t *testing.T) {
 	// Define a slice of test cases
 	tests := []struct {
 		name           string
-		reqBody        string
+		reqBody        url.Values
 		isNilBody      bool
 		expectedStatus int
 	}{
@@ -533,27 +521,27 @@ func TestRepository_PostAvailability(t *testing.T) {
 		},
 		{
 			name:           "Invalid start date",
-			reqBody:        "start=invalid&end=2040-01-02",
+			reqBody:        url.Values{"start": {"invalid"}, "end": {"2040-01-02"}},
 			expectedStatus: http.StatusTemporaryRedirect,
 		},
 		{
 			name:           "Invalid end date",
-			reqBody:        "start=2040-01-01&end=invalid",
+			reqBody:        url.Values{"start": {"2040-01-01"}, "end": {"invalid"}},
 			expectedStatus: http.StatusTemporaryRedirect,
 		},
 		{
 			name:           "Database query fails",
-			reqBody:        "start=2060-01-01&end=2060-01-02",
+			reqBody:        url.Values{"start": {"2060-01-01"}, "end": {"2060-01-02"}},
 			expectedStatus: http.StatusTemporaryRedirect,
 		},
 		{
 			name:           "No rooms available",
-			reqBody:        "start=2050-01-01&end=2050-01-02",
+			reqBody:        url.Values{"start": {"2050-01-01"}, "end": {"2050-01-02"}},
 			expectedStatus: http.StatusSeeOther,
 		},
 		{
 			name:           "Rooms available",
-			reqBody:        "start=2024-01-01&end=2024-01-02",
+			reqBody:        url.Values{"start": {"2024-01-01"}, "end": {"2024-01-02"}},
 			expectedStatus: http.StatusOK,
 		},
 	}
@@ -565,7 +553,8 @@ func TestRepository_PostAvailability(t *testing.T) {
 				// Handle the case where the request body should be nil
 				req, _ = http.NewRequest("POST", "/search-availability", nil)
 			} else {
-				req, _ = http.NewRequest("POST", "/search-availability", strings.NewReader(tt.reqBody))
+				// Encode the url.Values into the request body
+				req, _ = http.NewRequest("POST", "/search-availability", strings.NewReader(tt.reqBody.Encode()))
 			}
 
 			// Get the context with session
