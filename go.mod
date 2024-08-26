@@ -9,6 +9,7 @@ require (
 	github.com/jackc/pgconn v1.14.3
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/justinas/nosurf v1.1.1
+	github.com/xhit/go-simple-mail v2.2.2+incompatible
 )
 
 require (
