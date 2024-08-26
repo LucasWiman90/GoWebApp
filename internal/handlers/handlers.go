@@ -162,10 +162,11 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 
 	//Send notification
 	msg := models.MailData{
-		To:      reservation.Email,
-		From:    "me@here.com",
-		Subject: "Reservation Confirmation",
-		Content: htmlMessage,
+		To:       reservation.Email,
+		From:     "me@here.com",
+		Subject:  "Reservation Confirmation",
+		Content:  htmlMessage,
+		Template: "basic.html",
 	}
 
 	m.App.MailChan <- msg
