@@ -519,7 +519,74 @@ func TestRepository_AvailabilityJSON(t *testing.T) {
 }
 
 func TestRepository_PostAvailability(t *testing.T) {
+	// Define a slice of test cases
+	tests := []struct {
+		name           string
+		reqBody        string
+		isNilBody      bool
+		expectedStatus int
+	}{
+		{
+			name:           "Empty post body",
+			isNilBody:      true, // Indicates that the request body should be nil
+			expectedStatus: http.StatusTemporaryRedirect,
+		},
+		{
+			name:           "Invalid start date",
+			reqBody:        "start=invalid&end=2040-01-02",
+			expectedStatus: http.StatusTemporaryRedirect,
+		},
+		{
+			name:           "Invalid end date",
+			reqBody:        "start=2040-01-01&end=invalid",
+			expectedStatus: http.StatusTemporaryRedirect,
+		},
+		{
+			name:           "Database query fails",
+			reqBody:        "start=2060-01-01&end=2060-01-02",
+			expectedStatus: http.StatusTemporaryRedirect,
+		},
+		{
+			name:           "No rooms available",
+			reqBody:        "start=2050-01-01&end=2050-01-02",
+			expectedStatus: http.StatusSeeOther,
+		},
+		{
+			name:           "Rooms available",
+			reqBody:        "start=2024-01-01&end=2024-01-02",
+			expectedStatus: http.StatusOK,
+		},
+	}
 
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var req *http.Request
+			if tt.isNilBody {
+				// Handle the case where the request body should be nil
+				req, _ = http.NewRequest("POST", "/search-availability", nil)
+			} else {
+				req, _ = http.NewRequest("POST", "/search-availability", strings.NewReader(tt.reqBody))
+			}
+
+			// Get the context with session
+			ctx := getCtx(req)
+			req = req.WithContext(ctx)
+
+			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+			rr := httptest.NewRecorder()
+
+			handler := http.HandlerFunc(Repo.PostAvailability)
+
+			// Make the request to our handler
+			handler.ServeHTTP(rr, req)
+
+			// Check if the status code is what we expect
+			if rr.Code != tt.expectedStatus {
+				t.Errorf("%s gave wrong status code: got %d, wanted %d", tt.name, rr.Code, tt.expectedStatus)
+			}
+		})
+	}
 }
 
 func getCtx(req *http.Request) context.Context {
