@@ -405,6 +405,7 @@ func TestRepositry_BookRoom(t *testing.T) {
 }
 
 func TestRepository_AvailabilityJSON(t *testing.T) {
+	// Case 1 - Room not available
 	reqBody := "start=2050-01-02"
 	reqBody = fmt.Sprintf("%s&%s", reqBody, "end=2050-01-03")
 	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
@@ -462,7 +463,7 @@ func TestRepository_AvailabilityJSON(t *testing.T) {
 		t.Error("It should be fail and its passed")
 	}
 
-	// Case 3 Room unavailable
+	// Case 3 Room available
 	reqBody = "start=2040-01-02"
 	reqBody = fmt.Sprintf("%s&%s", reqBody, "end=2040-01-02")
 	reqBody = fmt.Sprintf("%s&%s", reqBody, "room_id=1")
@@ -484,6 +485,7 @@ func TestRepository_AvailabilityJSON(t *testing.T) {
 		t.Error("Failed to parse JSON")
 	}
 
+	// since we specified a start date < 2049-12-31, we expect availability
 	if !j.OK {
 		t.Error("There is no availablity and it should be fail and its passed")
 	}
@@ -514,6 +516,9 @@ func TestRepository_AvailabilityJSON(t *testing.T) {
 	if j.Message != "Error querying database" {
 		t.Error("Error connecting to my DB:it should be fail and its passed")
 	}
+}
+
+func TestRepository_PostAvailability(t *testing.T) {
 
 }
 
