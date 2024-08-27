@@ -1,5 +1,6 @@
 # GoWebApp
-This is the repository for my web Application project.
+This is the repository for my web Application project. It was developed as part of following a course
+on Udemy
 
 - Built in Go 1.22.5
 - Uses the [chi router](https://github.com/go-chi/chi)
@@ -12,7 +13,7 @@ This is the repository for my web Application project.
 # How to run the application
 Compile and run the application using the ./run.sh script
 
-# Soda
+# Soda Usage
 This command creates a new up/down migration with the name you specified
 
 soda generate fizz <migration_name>
@@ -31,9 +32,13 @@ Note: Make sure no other connections exist for the database. So exit Dbeaver bef
 soda reset
 
 # PostgreSQL
-Note to self: Never use the default postgres database for applications.
-Create one specifically for your application, like here below "bookings"
 
+This application was developed with a PostgreSQL database as part of its backend.
+
+Note to self: Never use the default postgres database for applications.
+Create one specifically for the application you are developing, like here below "bookings"
+
+Example usage:
 psql -h winhost -p 5432 -U postgres -d bookings
 
 DROP DATABASE bookings
