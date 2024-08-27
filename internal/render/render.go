@@ -86,6 +86,7 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	}
 
 	//Range through all files ending with *.page.tmpl
+	//Also parse all template functions as part of each template
 	for _, page := range pages {
 		name := filepath.Base(page)
 		ts, err := template.New(name).Funcs(functions).ParseFiles(page)

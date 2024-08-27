@@ -23,7 +23,10 @@ import (
 var app config.AppConfig
 var session *scs.SessionManager
 var pathToTemplates = "./../../templates"
-var functions = template.FuncMap{}
+
+var functions = template.FuncMap{
+	"humanDate": render.HumanDate,
+}
 
 func TestMain(m *testing.M) {
 	gob.Register(models.Reservation{})
@@ -138,7 +141,7 @@ func CreateTestTemplateCache() (map[string]*template.Template, error) {
 	//Range through all files ending with *.page.tmpl
 	for _, page := range pages {
 		name := filepath.Base(page)
-		ts, err := template.New(name).ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return myCache, err
 		}

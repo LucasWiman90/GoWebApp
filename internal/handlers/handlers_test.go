@@ -213,6 +213,7 @@ func TestRepositry_ReservationSummary(t *testing.T) {
 		},
 	}
 
+	// First case -- reservation in session
 	req, _ := http.NewRequest("GET", "/reservation-summary", nil)
 	ctx := getCtx(req)
 	req = req.WithContext(ctx)
