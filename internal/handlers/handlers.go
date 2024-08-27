@@ -12,6 +12,7 @@ import (
 	"github.com/LucasWiman90/GoWebApp/internal/config"
 	"github.com/LucasWiman90/GoWebApp/internal/driver"
 	"github.com/LucasWiman90/GoWebApp/internal/forms"
+	"github.com/LucasWiman90/GoWebApp/internal/helpers"
 	"github.com/LucasWiman90/GoWebApp/internal/models"
 	"github.com/LucasWiman90/GoWebApp/internal/render"
 	"github.com/LucasWiman90/GoWebApp/internal/repository"
@@ -455,7 +456,18 @@ func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 }
 
 func (m *Repository) AdminAllReservations(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "admin-all-reservations.page.tmpl", &models.TemplateData{})
+	reservations, err := m.DB.AllReservations()
+	if err != nil {
+		helpers.ServerError(w, err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["reservations"] = reservations
+
+	render.Template(w, r, "admin-all-reservations.page.tmpl", &models.TemplateData{
+		Data: data,
+	})
 }
 
 func (m *Repository) AdminNewReservations(w http.ResponseWriter, r *http.Request) {

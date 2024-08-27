@@ -7,13 +7,16 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 
 	"github.com/LucasWiman90/GoWebApp/internal/config"
 	"github.com/LucasWiman90/GoWebApp/internal/models"
 	"github.com/justinas/nosurf"
 )
 
-var functions = template.FuncMap{}
+var functions = template.FuncMap{
+	"humanDate": HumanDate,
+}
 
 var app *config.AppConfig
 
@@ -22,6 +25,11 @@ var pathToTemplates = "./templates"
 // NewRenderer sets the config for the render package
 func NewRenderer(a *config.AppConfig) {
 	app = a
+}
+
+// HumanDate returns time in YYYY-MM-DD format
+func HumanDate(t time.Time) string {
+	return t.Format("2006-01-02")
 }
 
 func AddDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateData {
@@ -80,7 +88,7 @@ func CreateTemplateCache() (map[string]*template.Template, error) {
 	//Range through all files ending with *.page.tmpl
 	for _, page := range pages {
 		name := filepath.Base(page)
-		ts, err := template.New(name).ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			return myCache, err
 		}
