@@ -10,7 +10,7 @@
                     <div class="mb-3">
                         <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
                         <label for="email" class="form-label">Email</label>
-                        {{with .Form.Errors.Get "first_name"}}
+                        {{with .Form.Errors.Get "email"}}
                         <label class="text-danger">{{.}}</label>
                         {{end}}
                         <input type="email" class="form-control {{with .Form.Errors.Get "email"}} is-invalid {{end}}" 
