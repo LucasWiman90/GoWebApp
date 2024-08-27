@@ -46,7 +46,11 @@
                 <a class="nav-link" href="/contact" aria-disabled="true">Contact</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" href="/user/login" aria-disabled="true">Login</a>
+                {{if eq .IsAuthenticated 1}}
+                    <a class="nav-link" href="/user/logout" aria-disabled="true">Logout</a>
+                {{else}}
+                    <a class="nav-link" href="/user/login" aria-disabled="true">Login</a>
+                {{end}}
               </li>
             </ul>
           </div>
@@ -122,7 +126,7 @@
         {{end}}
 
         {{with .Flash}}
-        notify("{{.}}", "flash")
+        notify("{{.}}", "success")
         {{end}}
 
         {{with .Warning}}
