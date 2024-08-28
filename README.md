@@ -1,6 +1,6 @@
 # GoWebApp
-This is the repository for my web Application project. It was developed as part of following a course
-on Udemy
+This is the repository for my web Application project. It was something I developed as part of 
+following a project course on Udemy for Golang Web Applications
 
 - Built in Go 1.22.5
 - Uses the [chi router](https://github.com/go-chi/chi)
