@@ -154,3 +154,10 @@ func (m *testDBRepo) DeleteReservation(id int) error {
 func (m *testDBRepo) UpdateProcessedForReservations(id, processed int) error {
 	return nil
 }
+
+// AllRooms returns a slice of rooms
+func (m *testDBRepo) AllRooms() ([]models.Room, error) {
+	var rooms []models.Room
+
+	return rooms, nil
+}
