@@ -57,10 +57,16 @@
                        name="phone" value="{{$res.Phone}}" required>
             </div>
 
-            <button type="submit" class="btn btn-dark">Save</button>
-
-            <a href="/admin/reservations-{{$src}}" class="btn btn-dark">Cancel</a>
-            <a href="#!" class="btn btn-info" onclick="processRes({{$res.ID}})">Mark as Processed</a>
+            <div class="d-flex justify-content-between">
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-dark me-2">Save</button>
+                    <a href="/admin/reservations-{{$src}}" class="btn btn-dark me-2">Cancel</a>
+                    <a href="#!" class="btn btn-info" onclick="processRes({{$res.ID}})">Mark as Processed</a>
+                </div>
+                <div>
+                    <a href="#!" class="btn btn-danger" onclick="deleteRes({{$res.ID}})">Delete</a>
+                </div>
+            </div>
         </form>
     </div>
 {{end}}
@@ -75,6 +81,18 @@
                 callback: function(result) {
                     if (result !== false) {
                         window.location.href = "/admin/process-reservation/{{$src}}/" + id;
+                    }
+                }
+            })
+        }
+
+        function deleteRes(id) {
+            attention.custom({
+                icon: "warning",
+                msg: "Are you sure?",
+                callback: function(result) {
+                    if (result !== false) {
+                        window.location.href = "/admin/delete-reservation/{{$src}}/" + id;
                     }
                 }
             })
