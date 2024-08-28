@@ -66,10 +66,18 @@
 {{end}}
 
 {{define "js"}}
-    {{$res := index .StringMap "src"}}
+    {{$src := index .StringMap "src"}}
     <script>
         function processRes(id) {
-
+            attention.custom({
+                icon: "warning",
+                msg: "Are you sure?",
+                callback: function(result) {
+                    if (result !== false) {
+                        window.location.href = "/admin/process-reservation/{{$src}}/" + id;
+                    }
+                }
+            })
         }
     </script>
 {{end}}
