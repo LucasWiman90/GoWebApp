@@ -54,6 +54,7 @@ func run() (*driver.DB, error) {
 	gob.Register(models.User{})
 	gob.Register(models.Room{})
 	gob.Register(models.Reservation{})
+	gob.Register(map[string]int{})
 	//Change this to true when in production
 
 	mailChan := make(chan models.MailData)
