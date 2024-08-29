@@ -60,7 +60,11 @@
             <div class="d-flex justify-content-between">
                 <div class="btn-group">
                     <button type="submit" class="btn btn-dark me-2">Save</button>
-                    <a href="/admin/reservations-{{$src}}" class="btn btn-dark me-2">Cancel</a>
+                    {{if eq $src "cal"}}
+                        <a href="#!" onclick="window.history.go(-1)" class="btn btn-dark me-2">Cancel</a>
+                    {{else}}
+                        <a href="/admin/reservations-{{$src}}" class="btn btn-dark me-2">Cancel</a>
+                    {{end}}
                     <a href="#!" class="btn btn-info" onclick="processRes({{$res.ID}})">Mark as Processed</a>
                 </div>
                 <div>

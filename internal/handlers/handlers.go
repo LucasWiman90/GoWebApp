@@ -561,10 +561,11 @@ func (m *Repository) AdminPostShowReservation(w http.ResponseWriter, r *http.Req
 
 // AdminReservationsCalendar displays the reservation calendar
 func (m *Repository) AdminReservationsCalendar(w http.ResponseWriter, r *http.Request) {
+	// assume that there is no month/year specified
 	now := time.Now()
 
 	//When reading the url for reservationCalendar, if its not empty we need
-	//to parse the year and month to create a new time object for 'now'
+	//to parse the year and month to create a new time object for 'now
 	if r.URL.Query().Get("y") != "" {
 		year, _ := strconv.Atoi(r.URL.Query().Get("y"))
 		month, _ := strconv.Atoi(r.URL.Query().Get("m"))
@@ -581,10 +582,10 @@ func (m *Repository) AdminReservationsCalendar(w http.ResponseWriter, r *http.Re
 
 	nextMonth := next.Format("01")
 	nextMonthYear := next.Format("2006")
+
 	lastMonth := last.Format("01")
 	lastMonthYear := last.Format("2006")
 
-	//Build our stringmap for template data holding time data in string format
 	stringMap := make(map[string]string)
 	stringMap["next_month"] = nextMonth
 	stringMap["next_month_year"] = nextMonthYear
@@ -594,7 +595,7 @@ func (m *Repository) AdminReservationsCalendar(w http.ResponseWriter, r *http.Re
 	stringMap["this_month"] = now.Format("01")
 	stringMap["this_month_year"] = now.Format("2006")
 
-	//Get the first and last days of the month
+	// get the first and last days of the month
 	currentYear, currentMonth, _ := now.Date()
 	currentLocation := now.Location()
 	firstOfMonth := time.Date(currentYear, currentMonth, 1, 0, 0, 0, 0, currentLocation)
@@ -622,7 +623,7 @@ func (m *Repository) AdminReservationsCalendar(w http.ResponseWriter, r *http.Re
 			blockMap[d.Format("2006-01-2")] = 0
 		}
 
-		//Get all restrictions for the current room
+		//Get all the restrictions for the current room
 		restrictions, err := m.DB.GetRestrictionsForRoomByDate(x.ID, firstOfMonth, lastOfMonth)
 		if err != nil {
 			helpers.ServerError(w, err)
@@ -632,20 +633,19 @@ func (m *Repository) AdminReservationsCalendar(w http.ResponseWriter, r *http.Re
 		//Go through individual restrictions
 		for _, y := range restrictions {
 			if y.ReservationID > 0 {
-				//It is a reservation
+				//It's a reservation
 				for d := y.StartDate; !d.After(y.EndDate); d = d.AddDate(0, 0, 1) {
 					reservationMap[d.Format("2006-01-2")] = y.ReservationID
 				}
 			} else {
-				//It is a block
-				blockMap[y.StartDate.Format("2006-01-2")] = y.ReservationID
+				//It's a block
+				blockMap[y.StartDate.Format("2006-01-2")] = y.ID
 			}
 		}
-
-		//Store the maps in data for the template for current room
 		data[fmt.Sprintf("reservation_map_%d", x.ID)] = reservationMap
 		data[fmt.Sprintf("block_map_%d", x.ID)] = blockMap
 
+		//This stores the blockMap of restrictions before any changes were made to the calendar. Useful for comparisons later
 		m.App.Session.Put(r.Context(), fmt.Sprintf("block_map_%d", x.ID), blockMap)
 	}
 
