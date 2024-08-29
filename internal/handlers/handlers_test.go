@@ -151,7 +151,7 @@ func TestRepository_PostReservation(t *testing.T) {
 			name:           "Invalid form",
 			reservation:    baseReservation,
 			reqBody:        url.Values{"first_name": {"a"}, "last_name": {"l"}, "room_id": {"invalid"}},
-			expectedStatus: http.StatusOK,
+			expectedStatus: http.StatusSeeOther,
 			setupSession:   true,
 		},
 		{
