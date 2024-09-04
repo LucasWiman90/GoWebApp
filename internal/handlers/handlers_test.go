@@ -8,10 +8,12 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/LucasWiman90/GoWebApp/internal/driver"
 	"github.com/LucasWiman90/GoWebApp/internal/models"
 )
 
@@ -57,6 +59,15 @@ func TestHandlers(t *testing.T) {
 		if resp.StatusCode != e.expectedStatusCode {
 			t.Errorf("for %s, expected %d but got %d", e.name, e.expectedStatusCode, resp.StatusCode)
 		}
+	}
+}
+
+func TestNewRepo(t *testing.T) {
+	var db driver.DB
+	testRepo := NewRepo(&app, &db)
+
+	if reflect.TypeOf(testRepo).String() != "*handlers.Repository" {
+		t.Errorf("Did not get correct type from NewRepo: got %s, wanted *Repository", reflect.TypeOf(testRepo).String())
 	}
 }
 
