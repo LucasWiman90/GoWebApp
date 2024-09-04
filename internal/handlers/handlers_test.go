@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -109,7 +110,7 @@ func TestRepository_Reservation(t *testing.T) {
 }
 
 func TestRepository_PostReservation(t *testing.T) {
-	layout := "2006-01-02"
+	/*layout := "2006-01-02"
 	sd, _ := time.Parse(layout, "2024-01-02")
 	ed, _ := time.Parse(layout, "2024-01-03")
 
@@ -122,76 +123,142 @@ func TestRepository_PostReservation(t *testing.T) {
 			ID:       1,
 			RoomName: "Nebula Quarters",
 		},
-	}
+	} */
 
 	// Define a slice of test cases
 	tests := []struct {
-		name           string
-		reservation    models.Reservation
-		reqBody        url.Values
-		isNilBody      bool
-		expectedStatus int
-		setupSession   bool
+		name             string
+		postedData       url.Values
+		isNilBody        bool
+		expectedStatus   int
+		expectedLocation string
+		expectedHTML     string
 	}{
 		{
-			name:           "Valid reservation",
-			reservation:    baseReservation,
-			reqBody:        url.Values{"first_name": {"Harold"}, "last_name": {"Jones"}, "email": {"harold.jones@gmail.com"}, "phone": {"9718594945"}, "room_id": {"1"}},
-			expectedStatus: http.StatusSeeOther,
-			setupSession:   true,
+			name: "Valid_reservation",
+			postedData: url.Values{
+				"start_date": {"2050-01-01"},
+				"end_date":   {"2050-01-02"},
+				"first_name": {"Harold"},
+				"last_name":  {"Jones"},
+				"email":      {"harold.jones@gmail.com"},
+				"phone":      {"9718594945"},
+				"room_id":    {"1"}},
+			expectedStatus:   http.StatusSeeOther,
+			expectedHTML:     "",
+			expectedLocation: "/reservation-summary",
 		},
 		{
-			name:           "Missing form body",
-			reservation:    baseReservation,
-			isNilBody:      true,
-			expectedStatus: http.StatusSeeOther,
-			setupSession:   true,
+			name:             "Missing_post_body",
+			postedData:       nil,
+			expectedStatus:   http.StatusSeeOther,
+			expectedHTML:     "",
+			expectedLocation: "/",
 		},
 		{
-			name:           "Invalid form",
-			reservation:    baseReservation,
-			reqBody:        url.Values{"first_name": {"a"}, "last_name": {"l"}, "room_id": {"invalid"}},
-			expectedStatus: http.StatusSeeOther,
-			setupSession:   true,
+			name: "Invalid_start_date",
+			postedData: url.Values{
+				"start_date": {"invalid"},
+				"end_date":   {"2050-01-02"},
+				"first_name": {"Wilburt"},
+				"last_name":  {"Sonesson"},
+				"email":      {"wilburt@sonesson.com"},
+				"phone":      {"555-555-5555"},
+				"room_id":    {"1"},
+			},
+			expectedStatus:   http.StatusSeeOther,
+			expectedHTML:     "",
+			expectedLocation: "/",
 		},
 		{
-			name:           "Session not set with reservation",
-			expectedStatus: http.StatusSeeOther,
-			setupSession:   false,
+			name: "Invalid_end_date",
+			postedData: url.Values{
+				"start_date": {"2050-01-02"},
+				"end_date":   {"invalid"},
+				"first_name": {"Wilburt"},
+				"last_name":  {"Sonesson"},
+				"email":      {"wilburt@sonesson.com"},
+				"phone":      {"555-555-5555"},
+				"room_id":    {"1"},
+			},
+			expectedStatus:   http.StatusSeeOther,
+			expectedHTML:     "",
+			expectedLocation: "/",
 		},
 		{
-			name:           "Unable to insert reservation",
-			reservation:    models.Reservation{RoomID: 2, StartDate: sd, EndDate: ed, Room: models.Room{ID: 2, RoomName: "Galaxy Suite"}},
-			reqBody:        url.Values{"first_name": {"Douglas"}, "last_name": {"Adams"}, "email": {"hitchiker@gmail.com"}, "phone": {"234626456"}, "room_id": {"1"}},
-			expectedStatus: http.StatusSeeOther,
-			setupSession:   true,
+			name: "Invalid_room_id",
+			postedData: url.Values{
+				"start_date": {"2050-01-01"},
+				"end_date":   {"2050-01-02"},
+				"first_name": {"Ronald"},
+				"last_name":  {"McDonald"},
+				"email":      {"ronald@mcdonald.com"},
+				"phone":      {"666-444-5555"},
+				"room_id":    {"invalid"},
+			},
+			expectedStatus:   http.StatusSeeOther,
+			expectedHTML:     "",
+			expectedLocation: "/",
 		},
 		{
-			name:           "Unable to insert room restrictions",
-			reservation:    models.Reservation{RoomID: 1000, StartDate: sd, EndDate: ed, Room: models.Room{ID: 1000, RoomName: "Unknown Room"}},
-			reqBody:        url.Values{"first_name": {"John"}, "last_name": {"Scatman"}, "email": {"john.scatman@gmail.com"}, "phone": {"432452"}, "room_id": {"1"}},
-			expectedStatus: http.StatusSeeOther,
-			setupSession:   true,
+			name: "Invalid_data_(first_name)",
+			postedData: url.Values{
+				"start_date": {"2050-01-01"},
+				"end_date":   {"2050-01-02"},
+				"first_name": {"5"},
+				"last_name":  {"Numberman"},
+				"email":      {"x@Numberman.com"},
+				"phone":      {"555-555-5555"},
+				"room_id":    {"1"},
+			},
+			expectedStatus:   http.StatusOK,
+			expectedHTML:     `action="/make-reservation"`,
+			expectedLocation: "",
+		},
+		{
+			name: "DB_Insert_fails_reservation",
+			postedData: url.Values{
+				"start_date": {"2050-01-01"},
+				"end_date":   {"2050-01-02"},
+				"first_name": {"Benjamin"},
+				"last_name":  {"Numberman"},
+				"email":      {"Benjamin@Numberman.com"},
+				"phone":      {"111-222-3333"},
+				"room_id":    {"2"},
+			},
+			expectedStatus:   http.StatusSeeOther,
+			expectedHTML:     "",
+			expectedLocation: "/",
+		},
+		{
+			name: "DB_Insert_fails_restriction",
+			postedData: url.Values{
+				"start_date": {"2050-01-01"},
+				"end_date":   {"2050-01-02"},
+				"first_name": {"Benjamin"},
+				"last_name":  {"Numberman"},
+				"email":      {"Benjamin@Numberman.com"},
+				"phone":      {"111-222-3333"},
+				"room_id":    {"1000"},
+			},
+			expectedStatus:   http.StatusSeeOther,
+			expectedHTML:     "",
+			expectedLocation: "/",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var req *http.Request
-			if tt.isNilBody {
-				req, _ = http.NewRequest("POST", "/make-reservation", nil)
+			if tt.postedData != nil {
+				req, _ = http.NewRequest("POST", "/make-reservation", strings.NewReader(tt.postedData.Encode()))
 			} else {
-				req, _ = http.NewRequest("POST", "/make-reservation", strings.NewReader(tt.reqBody.Encode()))
+				req, _ = http.NewRequest("POST", "/make-reservation", nil)
 			}
 
 			// Set up context and session if needed
 			ctx := getCtx(req)
 			req = req.WithContext(ctx)
-
-			if tt.setupSession {
-				session.Put(ctx, "reservation", tt.reservation)
-			}
-
 			req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 			rr := httptest.NewRecorder()
@@ -201,6 +268,22 @@ func TestRepository_PostReservation(t *testing.T) {
 
 			if rr.Code != tt.expectedStatus {
 				t.Errorf("%s handler returned wrong response code: got %d, wanted %d", tt.name, rr.Code, tt.expectedStatus)
+			}
+
+			if tt.expectedLocation != "" {
+				// get the URL from test
+				actualLoc, _ := rr.Result().Location()
+				if actualLoc.String() != tt.expectedLocation {
+					t.Errorf("failed %s: expected location %s, but got location %s", tt.name, tt.expectedLocation, actualLoc.String())
+				}
+			}
+
+			if tt.expectedHTML != "" {
+				// read the response body into a string
+				html := rr.Body.String()
+				if !strings.Contains(html, tt.expectedHTML) {
+					t.Errorf("failed %s: expected to find %s but did not", tt.name, tt.expectedHTML)
+				}
 			}
 		})
 	}
@@ -238,7 +321,7 @@ func TestRepositry_ReservationSummary(t *testing.T) {
 		t.Errorf("ReservationSummary handler returned wrong response code: got %d, wanted %d", rr.Code, http.StatusOK)
 	}
 
-	// second case -- reservation not in session
+	// Second case -- reservation not in session
 	req, _ = http.NewRequest("GET", "/reservation-summary", nil)
 	ctx = getCtx(req)
 	req = req.WithContext(ctx)
@@ -610,6 +693,86 @@ func TestLogin(t *testing.T) {
 				t.Errorf("failed %s: expected to find %s, but did not", e.name, e.expectedHTML)
 			}
 		}
+	}
+}
+
+func TestAdminDeleteReservation(t *testing.T) {
+	// Define a slice of test cases
+	tests := []struct {
+		name                 string
+		queryParams          string
+		expectedResponseCode int
+		expectedLocation     string
+	}{
+		{
+			name:                 "delete-reservation",
+			queryParams:          "",
+			expectedResponseCode: http.StatusSeeOther,
+			expectedLocation:     "",
+		},
+		{
+			name:                 "delete-reservation-back-to-calender",
+			queryParams:          "?y=2024&m=12",
+			expectedResponseCode: http.StatusSeeOther,
+			expectedLocation:     "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/admin/process-reservation/cal/1/do%s", tt.queryParams), nil)
+			ctx := getCtx(req)
+			req = req.WithContext(ctx)
+
+			rr := httptest.NewRecorder()
+
+			handler := http.HandlerFunc(Repo.AdminDeleteReservation)
+			handler.ServeHTTP(rr, req)
+
+			if rr.Code != http.StatusSeeOther {
+				t.Errorf("failed %s: expected code %d, but got %d", tt.name, tt.expectedResponseCode, rr.Code)
+			}
+		})
+	}
+}
+
+func TestAdminProcessReservation(t *testing.T) {
+	// Define a slice of test cases
+	tests := []struct {
+		name                 string
+		queryParams          string
+		expectedResponseCode int
+		expectedLocation     string
+	}{
+		{
+			name:                 "process-reservation",
+			queryParams:          "",
+			expectedResponseCode: http.StatusSeeOther,
+			expectedLocation:     "",
+		},
+		{
+			name:                 "process-reservation-back-to-calender",
+			queryParams:          "?y=2024&m=12",
+			expectedResponseCode: http.StatusSeeOther,
+			expectedLocation:     "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			req, _ := http.NewRequest("GET", fmt.Sprintf("/admin/process-reservation/cal/1/do%s", tt.queryParams), nil)
+			ctx := getCtx(req)
+			req = req.WithContext(ctx)
+
+			rr := httptest.NewRecorder()
+
+			handler := http.HandlerFunc(Repo.AdminProcessReservation)
+			handler.ServeHTTP(rr, req)
+
+			if rr.Code != http.StatusSeeOther {
+				t.Errorf("failed %s: expected code %d, but got %d", tt.name, tt.expectedResponseCode, rr.Code)
+			}
+		})
 	}
 }
 
