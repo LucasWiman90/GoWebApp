@@ -121,26 +121,10 @@ func TestRepository_Reservation(t *testing.T) {
 }
 
 func TestRepository_PostReservation(t *testing.T) {
-	/*layout := "2006-01-02"
-	sd, _ := time.Parse(layout, "2024-01-02")
-	ed, _ := time.Parse(layout, "2024-01-03")
-
-	// Base reservation used across test cases
-	baseReservation := models.Reservation{
-		RoomID:    1,
-		StartDate: sd,
-		EndDate:   ed,
-		Room: models.Room{
-			ID:       1,
-			RoomName: "Nebula Quarters",
-		},
-	} */
-
 	// Define a slice of test cases
 	tests := []struct {
 		name             string
 		postedData       url.Values
-		isNilBody        bool
 		expectedStatus   int
 		expectedLocation string
 		expectedHTML     string
