@@ -240,6 +240,21 @@ func TestRepository_PostReservation(t *testing.T) {
 			expectedHTML:     "",
 			expectedLocation: "/",
 		},
+		{
+			name: "DB_Cannot_find_room",
+			postedData: url.Values{
+				"start_date": {"2050-01-01"},
+				"end_date":   {"2050-01-02"},
+				"first_name": {"Benjamin"},
+				"last_name":  {"Numberman"},
+				"email":      {"Benjamin@Numberman.com"},
+				"phone":      {"111-222-3333"},
+				"room_id":    {"100"},
+			},
+			expectedStatus:   http.StatusSeeOther,
+			expectedHTML:     "",
+			expectedLocation: "/",
+		},
 	}
 
 	for _, tt := range tests {
